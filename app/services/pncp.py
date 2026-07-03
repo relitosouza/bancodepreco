@@ -164,27 +164,28 @@ async def fetch_and_cache_pncp(
             all_contratacoes = []
 
             for cod_modalidade in modalidades:
-                # 1. Buscar contratações publicadas para esta modalidade
-                url_publicacoes = f"{settings.pncp_api_base_url}/modulo-contratacoes/1_consultarContratacoes_PNCP_14133"
-                params = {
-                    "dataPublicacaoPncpInicial": data_ini_str,
-                    "dataPublicacaoPncpFinal": data_fim_str,
-                    "codigoModalidade": cod_modalidade,
-                    "pagina": 1,
-                    "tamanhoPagina": 80, # Aumentado de 20 para 80 para buscar uma janela maior
-                    "unidadeOrgaoUfSigla": uf
-                }
-                
-                logger.info(f"Chamando API Consulta Compras.gov.br: {url_publicacoes} para UF={uf}, Modalidade={cod_modalidade}")
-                response = await client.get(url_publicacoes, params=params)
-                
-                if response.status_code != 200:
-                    logger.warning(f"Erro ao consultar modalidade {cod_modalidade} no Compras.gov.br: {response.status_code} - {response.text}")
-                    continue
+                for page in range(1, 4): # Pages 1, 2, and 3
+                    # 1. Buscar contratações publicadas para esta modalidade
+                    url_publicacoes = f"{settings.pncp_api_base_url}/modulo-contratacoes/1_consultarContratacoes_PNCP_14133"
+                    params = {
+                        "dataPublicacaoPncpInicial": data_ini_str,
+                        "dataPublicacaoPncpFinal": data_fim_str,
+                        "codigoModalidade": cod_modalidade,
+                        "pagina": page,
+                        "tamanhoPagina": 80, # Busca até 80 registros por página
+                        "unidadeOrgaoUfSigla": uf
+                    }
+                    
+                    logger.info(f"Chamando API Consulta Compras.gov.br: {url_publicacoes} para UF={uf}, Modalidade={cod_modalidade}, Página={page}")
+                    response = await client.get(url_publicacoes, params=params)
+                    
+                    if response.status_code != 200:
+                        logger.warning(f"Erro ao consultar modalidade {cod_modalidade} pág {page} no Compras.gov.br: {response.status_code}")
+                        continue
 
-                data = response.json()
-                contratacoes = data.get("resultado", [])
-                all_contratacoes.extend(contratacoes)
+                    data = response.json()
+                    contratacoes = data.get("resultado", [])
+                    all_contratacoes.extend(contratacoes)
 
             if all_contratacoes:
                 # 2. Consultar os itens de todas as contratações em paralelo usando Semaphore
@@ -199,14 +200,12 @@ async def fetch_and_cache_pncp(
             await session.commit()
 
         # Se a API de Consultas rodou mas não trouxe nenhum item coincidente para o termo,
-        # ativamos o gerador de simulações com cidades reais para não deixar a interface em branco
+        # apenas registramos o log. Não geramos dados simulados para garantir que apenas dados reais sejam exibidos nas pesquisas.
         if not real_data_fetched:
-            logger.info(f"Nenhuma contratação real de '{termo_clean}' encontrada na API do Compras.gov.br para a UF {uf}. Gerando dados simulados.")
-            await generate_mock_pncp_data(session, termo_clean, uf)
+            logger.info(f"Nenhuma contratação real de '{termo_clean}' encontrada na API do Compras.gov.br para a UF {uf}.")
 
     except Exception as e:
-        logger.error(f"Erro na integração Compras.gov.br: {e}. Executando fallback com simulações.")
-        await generate_mock_pncp_data(session, termo_clean, uf)
+        logger.error(f"Erro na integração Compras.gov.br: {e}.")
 
 
 
