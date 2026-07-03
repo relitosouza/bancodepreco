@@ -454,13 +454,32 @@
         ufSelect.value = muni.uf;
     }
 
+    function saveRecentSearch(term) {
+        if (!term || term.trim().length < 3) return;
+        const cleanTerm = term.trim();
+        let recent = JSON.parse(localStorage.getItem("recentSearches") || "[]");
+        recent = recent.filter(t => t.toLowerCase() !== cleanTerm.toLowerCase());
+        recent.unshift(cleanTerm);
+        recent = recent.slice(0, 3);
+        localStorage.setItem("recentSearches", JSON.stringify(recent));
+    }
+
     // Trigger Search
     async function triggerSearch(term = "") {
-        const queryTerm = term.trim() || searchInput.value.trim() || searchInputMobile.value.trim() || currentSearchTerm;
+        const queryTerm = term.trim() || 
+            (window.innerWidth < 768 ? searchInputMobile.value.trim() : searchInput.value.trim()) || 
+            currentSearchTerm;
         currentSearchTerm = queryTerm;
 
         searchInput.value = queryTerm;
         searchInputMobile.value = queryTerm;
+
+        // Save to local storage search history
+        saveRecentSearch(queryTerm);
+
+        // Update Title & Subtitle immediately to prevent static placeholder leak
+        pageTitle.textContent = `Resultados para "${queryTerm}"`;
+        pageSubtitle.textContent = `Resultados para "${queryTerm}" baseados em licitações recentes.`;
 
         const uf = ufSelect.value;
         const mesmoPorte = mesmoPorteToggle.checked && selectedMunicipioId !== null;
@@ -529,13 +548,16 @@
         metricMax.textContent = "R$ --";
         metricCount.textContent = "0";
         metricProgress.style.width = "0%";
+
+        pageTitle.textContent = `Resultados para "${currentSearchTerm}"`;
+        pageSubtitle.textContent = `Resultados para "${currentSearchTerm}" baseados em licitações recentes.`;
     }
 
     function renderResults(data) {
         tableBody.innerHTML = "";
         
         pageTitle.textContent = `Resultados para "${data.termo}"`;
-        pageSubtitle.textContent = `Resultados encontrados em contratações públicas baseados no filtro informado.`;
+        pageSubtitle.textContent = `Resultados para "${data.termo}" baseados em licitações recentes.`;
 
         const items = data.items || [];
         

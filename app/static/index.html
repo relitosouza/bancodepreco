@@ -195,41 +195,8 @@
                     <span class="material-symbols-outlined text-primary">history</span>
                     <h2 class="font-headline-sm text-headline-sm text-on-surface">Pesquisas Recentes</h2>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-card-gap">
-                    <!-- Card 1 -->
-                    <div onclick="navigateToSearch('Cadeira giratória de escritório')" class="bg-surface-container-lowest rounded-xl p-6 border border-surface-container shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-all cursor-pointer group">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="p-2 bg-secondary-container rounded-lg">
-                                <span class="material-symbols-outlined text-on-secondary-container">chair</span>
-                            </div>
-                            <span class="font-label-md text-label-md text-outline">Frequente</span>
-                        </div>
-                        <h3 class="font-headline-sm text-headline-sm text-on-surface mb-2 group-hover:text-primary transition-colors">Cadeira Giratória</h3>
-                        <p class="font-body-md text-body-md text-on-surface-variant">Pesquise preços de cadeiras corporativas homologadas.</p>
-                    </div>
-                    <!-- Card 2 -->
-                    <div onclick="navigateToSearch('Resma de papel')" class="bg-surface-container-lowest rounded-xl p-6 border border-surface-container shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-all cursor-pointer group">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="p-2 bg-secondary-container rounded-lg">
-                                <span class="material-symbols-outlined text-on-secondary-container">description</span>
-                            </div>
-                            <span class="font-label-md text-label-md text-outline">Frequente</span>
-                        </div>
-                        <h3 class="font-headline-sm text-headline-sm text-on-surface mb-2 group-hover:text-primary transition-colors">Papel A4 / Resma</h3>
-                        <p class="font-body-md text-body-md text-on-surface-variant">Veja valores de resmas de papel sulfite A4.</p>
-                    </div>
-                    <!-- Card 3 -->
-                    <div onclick="navigateToSearch('Notebook')" class="bg-surface-container-lowest rounded-xl p-6 border border-surface-container shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-all cursor-pointer group relative overflow-hidden">
-                        <div class="absolute top-0 right-0 w-24 h-24 bg-primary-fixed-dim rounded-bl-full opacity-20 -z-10"></div>
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="p-2 bg-secondary-container rounded-lg">
-                                <span class="material-symbols-outlined text-on-secondary-container">laptop_mac</span>
-                            </div>
-                            <span class="font-label-md text-label-md text-outline">Frequente</span>
-                        </div>
-                        <h3 class="font-headline-sm text-headline-sm text-on-surface mb-2 group-hover:text-primary transition-colors">Notebook i5/i7</h3>
-                        <p class="font-body-md text-body-md text-on-surface-variant">Compare valores unitários de equipamentos de TI.</p>
-                    </div>
+                <div id="recent-searches-grid" class="grid grid-cols-1 md:grid-cols-3 gap-card-gap">
+                    <!-- Cards de pesquisas recentes serão renderizados dinamicamente via JS -->
                 </div>
             </section>
 
@@ -333,7 +300,99 @@
     const toast = document.getElementById("toast-notification");
     const toastMessage = document.getElementById("toast-message");
 
+    const defaultSearches = [
+        {
+            term: "Cadeira giratória de escritório",
+            title: "Cadeira Giratória",
+            icon: "chair",
+            desc: "Pesquise preços de cadeiras corporativas homologadas."
+        },
+        {
+            term: "Resma de papel",
+            title: "Papel A4 / Resma",
+            icon: "description",
+            desc: "Veja valores de resmas de papel sulfite A4."
+        },
+        {
+            term: "Notebook",
+            title: "Notebook i5/i7",
+            icon: "laptop_mac",
+            desc: "Compare valores unitários de equipamentos de TI."
+        }
+    ];
+
+    function getSearchIcon(term) {
+        const lower = term.toLowerCase();
+        if (lower.includes("cadeira") || lower.includes("chair")) return "chair";
+        if (lower.includes("papel") || lower.includes("resma") || lower.includes("documento")) return "description";
+        if (lower.includes("notebook") || lower.includes("laptop") || lower.includes("computador") || lower.includes("ti")) return "laptop_mac";
+        if (lower.includes("veiculo") || lower.includes("carro") || lower.includes("picape") || lower.includes("utilitario")) return "directions_car";
+        if (lower.includes("limpeza") || lower.includes("ar condicionado")) return "cleaning_services";
+        if (lower.includes("software") || lower.includes("licença")) return "terminal";
+        if (lower.includes("leite") || lower.includes("alimento") || lower.includes("comida")) return "local_cafe";
+        return "search";
+    }
+
+    function renderRecentSearches() {
+        const grid = document.getElementById("recent-searches-grid");
+        if (!grid) return;
+
+        let recent = JSON.parse(localStorage.getItem("recentSearches") || "[]");
+        let itemsToShow = [];
+
+        recent.forEach(term => {
+            const matchedDefault = defaultSearches.find(d => d.term.toLowerCase() === term.toLowerCase());
+            if (matchedDefault) {
+                itemsToShow.push({ ...matchedDefault, label: "Recente" });
+            } else {
+                itemsToShow.push({
+                    term: term,
+                    title: term,
+                    icon: getSearchIcon(term),
+                    desc: "Pesquisa recente realizada pelo usuário.",
+                    label: "Recente"
+                });
+            }
+        });
+
+        defaultSearches.forEach(def => {
+            if (itemsToShow.length < 3 && !itemsToShow.some(item => item.term.toLowerCase() === def.term.toLowerCase())) {
+                itemsToShow.push({
+                    ...def,
+                    label: "Frequente"
+                });
+            }
+        });
+
+        itemsToShow = itemsToShow.slice(0, 3);
+
+        grid.innerHTML = itemsToShow.map(item => `
+            <div onclick="navigateToSearch('${item.term.replace(/'/g, "\\'")}')" class="bg-surface-container-lowest rounded-xl p-6 border border-surface-container shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-all cursor-pointer group">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="p-2 bg-secondary-container rounded-lg">
+                        <span class="material-symbols-outlined text-on-secondary-container">${item.icon}</span>
+                    </div>
+                    <span class="font-label-md text-label-md text-outline">${item.label}</span>
+                </div>
+                <h3 class="font-headline-sm text-headline-sm text-on-surface mb-2 group-hover:text-primary transition-colors">${item.title}</h3>
+                <p class="font-body-md text-body-md text-on-surface-variant">${item.desc}</p>
+            </div>
+        `).join("");
+    }
+
+    function saveRecentSearch(term) {
+        if (!term || term.trim().length < 3) return;
+        const cleanTerm = term.trim();
+        let recent = JSON.parse(localStorage.getItem("recentSearches") || "[]");
+        recent = recent.filter(t => t.toLowerCase() !== cleanTerm.toLowerCase());
+        recent.unshift(cleanTerm);
+        recent = recent.slice(0, 3);
+        localStorage.setItem("recentSearches", JSON.stringify(recent));
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
+        renderRecentSearches();
+
         // Search submit listeners
         heroSearch.addEventListener("keypress", (e) => {
             if (e.key === "Enter") {
@@ -357,6 +416,7 @@
 
     function navigateToSearch(term) {
         if (!term.trim()) return;
+        saveRecentSearch(term.trim());
         window.location.href = `/search?q=${encodeURIComponent(term.trim())}`;
     }
 
