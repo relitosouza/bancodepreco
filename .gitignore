@@ -4,11 +4,9 @@
 .env.*
 
 # Database files
-*.db
 *.db-journal
 *.db-shm
 *.db-wal
-banco_precos.db
 
 # Python
 __pycache__/
