@@ -1,4 +1,5 @@
 import httpx
+import asyncio
 from datetime import datetime, date, timedelta
 from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -44,6 +45,99 @@ async def search_local_cache(
     return list(result.scalars().all())
 
 
+async def fetch_items_for_contracao(
+    client: httpx.AsyncClient,
+    contracao: dict,
+    session: AsyncSession,
+    termo_clean: str,
+    semaphore: asyncio.Semaphore
+) -> bool:
+    """
+    Busca e processa os itens de uma contratação específica sob proteção de um semáforo.
+    """
+    cnpj = contracao.get("orgaoEntidadeCnpj")
+    ano = contracao.get("anoCompraPncp")
+    sequencial = contracao.get("sequencialCompraPncp")
+    orgao_nome = contracao.get("orgaoEntidadeRazaoSocial", "Órgão Não Informado")
+    municipio_ibge_7 = contracao.get("unidadeOrgaoCodigoIbge")
+    data_publicacao = contracao.get("dataPublicacaoPncp")
+    numero_controle_pncp = contracao.get("numeroControlePNCP")
+
+    if not (cnpj and ano and sequencial and numero_controle_pncp):
+        return False
+
+    url_itens = f"{settings.pncp_api_base_url}/modulo-contratacoes/2.1_consultarItensContratacoes_PNCP_14133_Id"
+    params_itens = {
+        "tipo": "numeroControlePNCPCompra",
+        "codigo": numero_controle_pncp
+    }
+
+    async with semaphore:
+        try:
+            res_itens = await client.get(url_itens, params=params_itens)
+            if res_itens.status_code != 200:
+                return False
+
+            itens_data = res_itens.json()
+            itens_json = itens_data.get("resultado", [])
+
+            # Trata a data de publicação
+            data_compra_dt = date.today()
+            if data_publicacao:
+                try:
+                    data_pub_clean = data_publicacao.split(".")[0].replace("Z", "").split("+")[0]
+                    data_compra_dt = datetime.fromisoformat(data_pub_clean).date()
+                except ValueError:
+                    pass
+
+            real_data_fetched = False
+            for item in itens_json:
+                descricao_item = item.get("descricaodetalhada") or item.get("descricaoResumida") or ""
+
+                # Salva apenas se o termo de busca estiver contido na descrição do item
+                if termo_clean not in descricao_item.lower():
+                    continue
+
+                numero_item = item.get("numeroItemPncp") or item.get("numeroItemCompra") or 1
+
+                # Obtém o valor unitário final do resultado (se houver), caso contrário pega o estimado
+                valor_unitario = float(item.get("valorUnitarioResultado") or item.get("valorUnitarioEstimado") or 0.0)
+                quantidade = int(item.get("quantidade", 1) or 1)
+
+                # Link real do edital no PNCP
+                link_contrato = f"https://pncp.gov.br/app/editais/{cnpj}/{ano}/{sequencial}"
+                item_id = f"{cnpj}_{ano}_{sequencial}_{numero_item}"
+
+                # Cruzamento com a base de municípios local por código IBGE de 7 dígitos
+                municipio_id = None
+                if municipio_ibge_7:
+                    municipio_id = int(municipio_ibge_7)
+                    m_check = await session.execute(select(Municipio).where(Municipio.id == municipio_id))
+                    if not m_check.scalars().first():
+                        municipio_id = None
+
+                # Cria ou atualiza o item no cache local
+                cache_item = CacheContratacao(
+                    id=item_id,
+                    termo_busca=termo_clean,
+                    nome_item=descricao_item,
+                    valor_unitario=valor_unitario,
+                    quantidade=quantidade,
+                    orgao_comprador=orgao_nome,
+                    municipio_id=municipio_id,
+                    link_contrato=link_contrato,
+                    data_compra=data_compra_dt,
+                    created_at=datetime.utcnow()
+                )
+                await session.merge(cache_item)
+                real_data_fetched = True
+
+            return real_data_fetched
+        except Exception as e:
+            logger.error(f"Erro ao consultar itens para contratação {numero_controle_pncp}: {e}")
+            return False
+
+
 async def fetch_and_cache_pncp(
     session: AsyncSession,
     termo: str,
@@ -65,7 +159,10 @@ async def fetch_and_cache_pncp(
     modalidades = [5, 8] # 5: Dispensa de Licitação, 8: Pregão (as duas mais comuns)
     
     try:
+        semaphore = asyncio.Semaphore(10) # Limita a 10 requisições simultâneas para evitar rate limit
         async with httpx.AsyncClient(timeout=20.0) as client:
+            all_contratacoes = []
+
             for cod_modalidade in modalidades:
                 # 1. Buscar contratações publicadas para esta modalidade
                 url_publicacoes = f"{settings.pncp_api_base_url}/modulo-contratacoes/1_consultarContratacoes_PNCP_14133"
@@ -74,7 +171,7 @@ async def fetch_and_cache_pncp(
                     "dataPublicacaoPncpFinal": data_fim_str,
                     "codigoModalidade": cod_modalidade,
                     "pagina": 1,
-                    "tamanhoPagina": 20,
+                    "tamanhoPagina": 80, # Aumentado de 20 para 80 para buscar uma janela maior
                     "unidadeOrgaoUfSigla": uf
                 }
                 
@@ -87,83 +184,17 @@ async def fetch_and_cache_pncp(
 
                 data = response.json()
                 contratacoes = data.get("resultado", [])
+                all_contratacoes.extend(contratacoes)
 
-                for contracao in contratacoes:
-                    cnpj = contracao.get("orgaoEntidadeCnpj")
-                    ano = contracao.get("anoCompraPncp")
-                    sequencial = contracao.get("sequencialCompraPncp")
-                    orgao_nome = contracao.get("orgaoEntidadeRazaoSocial", "Órgão Não Informado")
-                    municipio_ibge_7 = contracao.get("unidadeOrgaoCodigoIbge")
-                    data_publicacao = contracao.get("dataPublicacaoPncp")
-                    numero_controle_pncp = contracao.get("numeroControlePNCP")
-
-                    if not (cnpj and ano and sequencial and numero_controle_pncp):
-                        continue
-
-                    # 2. Obter os itens da contratação pela API de Dados Abertos
-                    url_itens = f"{settings.pncp_api_base_url}/modulo-contratacoes/2.1_consultarItensContratacoes_PNCP_14133_Id"
-                    params_itens = {
-                        "tipo": "numeroControlePNCPCompra",
-                        "codigo": numero_controle_pncp
-                    }
-                    res_itens = await client.get(url_itens, params=params_itens)
-                    
-                    if res_itens.status_code != 200:
-                        continue
-
-                    itens_data = res_itens.json()
-                    itens_json = itens_data.get("resultado", [])
-                    
-                    # Trata a data de publicação
-                    data_compra_dt = date.today()
-                    if data_publicacao:
-                        try:
-                            # Remove timezone if exists
-                            data_pub_clean = data_publicacao.split(".")[0].replace("Z", "").split("+")[0]
-                            data_compra_dt = datetime.fromisoformat(data_pub_clean).date()
-                        except ValueError:
-                            pass
-
-                    for item in itens_json:
-                        descricao_item = item.get("descricaodetalhada") or item.get("descricaoResumida") or ""
-                        
-                        # Salva apenas se o termo de busca estiver contido na descrição do item
-                        if termo_clean not in descricao_item.lower():
-                            continue
-
-                        numero_item = item.get("numeroItemPncp") or item.get("numeroItemCompra") or 1
-                        
-                        # Obtém o valor unitário final do resultado (se houver), caso contrário pega o estimado
-                        valor_unitario = float(item.get("valorUnitarioResultado") or item.get("valorUnitarioEstimado") or 0.0)
-                        quantidade = int(item.get("quantidade", 1) or 1)
-                        
-                        # Link real do edital no PNCP
-                        link_contrato = f"https://pncp.gov.br/app/editais/{cnpj}/{ano}/{sequencial}"
-                        item_id = f"{cnpj}_{ano}_{sequencial}_{numero_item}"
-
-                        # Cruzamento com a base de municípios local por código IBGE de 7 dígitos
-                        municipio_id = None
-                        if municipio_ibge_7:
-                            municipio_id = int(municipio_ibge_7)
-                            m_check = await session.execute(select(Municipio).where(Municipio.id == municipio_id))
-                            if not m_check.scalars().first():
-                                municipio_id = None
-
-                        # Cria ou atualiza o item no cache local
-                        cache_item = CacheContratacao(
-                            id=item_id,
-                            termo_busca=termo_clean,
-                            nome_item=descricao_item,
-                            valor_unitario=valor_unitario,
-                            quantidade=quantidade,
-                            orgao_comprador=orgao_nome,
-                            municipio_id=municipio_id,
-                            link_contrato=link_contrato,
-                            data_compra=data_compra_dt,
-                            created_at=datetime.utcnow()
-                        )
-                        await session.merge(cache_item)
-                        real_data_fetched = True
+            if all_contratacoes:
+                # 2. Consultar os itens de todas as contratações em paralelo usando Semaphore
+                tasks = [
+                    fetch_items_for_contracao(client, c, session, termo_clean, semaphore)
+                    for c in all_contratacoes
+                ]
+                results = await asyncio.gather(*tasks)
+                if any(results):
+                    real_data_fetched = True
 
             await session.commit()
 

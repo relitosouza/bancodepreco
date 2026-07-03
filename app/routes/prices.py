@@ -62,8 +62,18 @@ async def search_prices(
     # 2. Verificar cache local
     cache_results = await search_local_cache(db, termo_clean, uf_filtro, porte_filtro)
 
-    # 3. Se o cache estiver vazio, consome a API externa do PNCP
-    if not cache_results:
+    # Se o cache contiver apenas itens mock (simulados), tratamos como se estivesse vazio 
+    # para forçar uma nova consulta real à API do PNCP.
+    contem_apenas_mock = len(cache_results) > 0 and all(item.id.startswith("mock_") for item in cache_results)
+
+    # 3. Se o cache estiver vazio ou contiver apenas mock, consome a API externa do PNCP
+    if not cache_results or contem_apenas_mock:
+        if contem_apenas_mock:
+            # Removemos os dados fictícios anteriores do banco antes de tentar de novo
+            for item in cache_results:
+                await db.delete(item)
+            await db.commit()
+
         # Integra com o PNCP e salva os resultados no cache local SQLite
         await fetch_and_cache_pncp(db, termo_clean, uf_pesquisa_api)
         # Refaz a busca local contendo a base atualizada

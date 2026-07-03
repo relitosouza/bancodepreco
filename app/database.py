@@ -8,7 +8,9 @@ import shutil
 db_url = settings.database_url
 
 if os.environ.get("VERCEL") == "1":
-    src_db = "banco_precos.db"
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(current_dir)
+    src_db = os.path.join(project_root, "banco_precos.db")
     dest_db = "/tmp/banco_precos.db"
     if os.path.exists(src_db) and not os.path.exists(dest_db):
         try:
