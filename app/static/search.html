@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html class="light" lang="pt-BR">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Pesquisa de Preços - Banco de Preços Públicos</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-container": "#2170e4",
+                        "tertiary-container": "#66768d",
+                        "background": "#f7f9fb",
+                        "surface-container-highest": "#e0e3e5",
+                        "surface-variant": "#e0e3e5",
+                        "error-container": "#ffdad6",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#f2f4f6",
+                        "tertiary": "#4d5d73",
+                        "on-background": "#191c1e",
+                        "secondary-fixed-dim": "#bec6e0",
+                        "tertiary-fixed": "#d3e4fe",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed-dim": "#b7c8e1",
+                        "on-secondary-fixed-variant": "#3f465c",
+                        "on-primary-fixed": "#001a42",
+                        "inverse-on-surface": "#eff1f3",
+                        "on-surface-variant": "#424754",
+                        "primary": "#0058be",
+                        "secondary-container": "#dae2fd",
+                        "secondary-fixed": "#dae2fd",
+                        "primary-fixed-dim": "#adc6ff",
+                        "on-primary": "#ffffff",
+                        "surface": "#f7f9fb",
+                        "on-secondary-fixed": "#131b2e",
+                        "on-error": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "inverse-surface": "#2d3133",
+                        "on-secondary-container": "#5c647a",
+                        "on-primary-container": "#fefcff",
+                        "surface-dim": "#d8dadc",
+                        "on-error-container": "#93000a",
+                        "secondary": "#565e74",
+                        "outline-variant": "#c2c6d6",
+                        "primary-fixed": "#d8e2ff",
+                        "on-tertiary-fixed": "#0b1c30",
+                        "surface-container": "#eceef0",
+                        "surface-bright": "#f7f9fb",
+                        "on-tertiary-container": "#fdfcff",
+                        "on-tertiary-fixed-variant": "#38485d",
+                        "on-primary-fixed-variant": "#004395",
+                        "outline": "#727785",
+                        "on-tertiary": "#ffffff",
+                        "surface-tint": "#005ac2",
+                        "surface-container-high": "#e6e8ea",
+                        "on-surface": "#191c1e",
+                        "inverse-primary": "#adc6ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "8px",
+                        "container-padding": "24px",
+                        "card-gap": "16px",
+                        "gutter-grid": "20px",
+                        "table-cell-padding": "16px 24px"
+                    },
+                    "fontFamily": {
+                        "headline-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "data-mono": ["Inter"],
+                        "headline-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "data-mono": ["14px", { "lineHeight": "20px", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .shadow-level-1 { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); }
+        .shadow-level-2 { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+        .skeleton {
+            background: linear-gradient(90deg, #f2f4f6 25%, #e6e8ea 50%, #f2f4f6 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface h-screen overflow-hidden flex flex-col">
+
+<!-- TopNavBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-container-padding h-16 bg-surface-container-lowest shadow-sm text-primary font-headline-sm text-headline-sm">
+    <div class="flex items-center gap-4">
+        <a href="/" class="flex items-center gap-4 hover:opacity-90">
+            <span class="material-symbols-outlined text-primary text-2xl">account_balance</span>
+            <span class="font-headline-md text-headline-md font-bold text-primary">Banco de Preços Públicos</span>
+        </a>
+    </div>
+    <div class="flex-1 max-w-2xl mx-8 relative hidden md:block">
+        <div class="relative w-full">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+            <input id="search-input" class="w-full h-10 pl-10 pr-4 rounded-lg bg-surface-container-low border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-md text-body-md text-on-surface transition-all" placeholder="Buscar no banco de preços..." type="text" value="Cadeira giratória de escritório"/>
+        </div>
+    </div>
+    <div class="flex items-center gap-4 text-on-surface-variant">
+        <button aria-label="Notificações" class="hover:bg-surface-container-low p-2 rounded-full transition-colors scale-95 duration-200">
+            <span class="material-symbols-outlined">notifications</span>
+        </button>
+        <button aria-label="Conta" class="hover:bg-surface-container-low p-2 rounded-full transition-colors scale-95 duration-200">
+            <span class="material-symbols-outlined">account_circle</span>
+        </button>
+    </div>
+</header>
+
+<div class="flex flex-1 pt-16">
+    <!-- SideNavBar -->
+    <aside class="fixed left-0 top-16 h-[calc(100vh-64px)] w-[280px] p-base flex flex-col gap-4 bg-surface-container-low border-r border-outline-variant overflow-y-auto hidden md:flex z-40">
+        <div class="px-4 pt-4 pb-2">
+            <h2 class="font-headline-sm text-headline-sm font-bold text-primary">Navegação</h2>
+        </div>
+        <ul class="space-y-2 px-2">
+            <li>
+                <a class="flex items-center gap-3 px-4 py-2.5 text-on-surface-variant hover:bg-surface-variant rounded-lg active:scale-98 transition-transform hover:bg-surface-container-high transition-all" href="/">
+                    <span class="material-symbols-outlined text-outline">home</span>
+                    <span class="font-body-md text-body-md">Início</span>
+                </a>
+            </li>
+            <li>
+                <a class="flex items-center gap-3 px-4 py-2.5 bg-secondary-container text-on-secondary-container font-semibold rounded-lg active:scale-98 transition-transform" href="/search">
+                    <span class="material-symbols-outlined text-primary">search</span>
+                    <span class="font-body-md text-body-md">Pesquisa Avançada</span>
+                </a>
+            </li>
+        </ul>
+        
+        <hr class="border-outline-variant/30 my-1 mx-4" />
+
+        <div class="px-4 py-1">
+            <h3 class="text-xs font-bold uppercase text-outline">Filtros de Busca</h3>
+        </div>
+        
+        <div class="flex flex-col gap-4 px-3 flex-1">
+            <!-- UF Filter -->
+            <div>
+                <label class="block text-xs font-semibold uppercase text-on-surface-variant mb-1">Estado (UF) para Busca</label>
+                <select id="uf-select" class="w-full h-10 px-2 rounded-lg border border-outline-variant bg-surface-container-lowest text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary">
+                    <option value="SP" selected>São Paulo (SP)</option>
+                    <option value="RJ">Rio de Janeiro (RJ)</option>
+                    <option value="MG">Minas Gerais (MG)</option>
+                    <option value="PR">Paraná (PR)</option>
+                    <option value="RS">Rio Grande do Sul (RS)</option>
+                    <option value="SC">Santa Catarina (SC)</option>
+                    <option value="BA">Bahia (BA)</option>
+                    <option value="PE">Pernambuco (PE)</option>
+                </select>
+            </div>
+
+            <!-- Reference Municipality Autocomplete -->
+            <div>
+                <label class="block text-xs font-semibold uppercase text-on-surface-variant mb-1">Município de Referência</label>
+                <div class="relative">
+                    <span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-outline text-lg">location_on</span>
+                    <input id="muni-input" type="text" class="w-full h-10 pl-9 pr-4 rounded-lg border border-outline-variant bg-surface-container-lowest text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary" placeholder="Buscar município..." />
+                    <div id="muni-dropdown" class="absolute left-0 right-0 top-11 max-h-48 overflow-y-auto bg-surface-container-lowest border border-outline-variant rounded-lg hidden z-50 shadow-level-2"></div>
+                </div>
+                <div id="muni-info" class="mt-2 p-2 bg-primary/5 rounded border border-primary/10 hidden">
+                    <div class="text-xs font-semibold text-primary" id="muni-info-name">Adamantina/SP</div>
+                    <div class="text-[10px] text-on-surface-variant flex justify-between mt-0.5">
+                        <span>População: <strong id="muni-info-pop">50.278</strong></span>
+                        <span>Porte: <strong id="muni-info-porte">Médio Porte</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Same Porte Toggle -->
+            <div>
+                <label class="flex items-start gap-2.5 cursor-pointer p-1">
+                    <input id="mesmo-porte-toggle" type="checkbox" class="rounded border-outline-variant text-primary focus:ring-primary h-4.5 w-4.5 mt-0.5" disabled />
+                    <div>
+                        <span class="text-sm font-semibold text-on-surface-variant block">Porte Populacional</span>
+                        <span class="text-[11px] text-on-surface-variant opacity-80 block mt-0.5">Limitar busca a cidades do mesmo porte do município selecionado.</span>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <div class="px-3 pb-4 mt-auto">
+            <button id="apply-filters-btn" class="w-full bg-primary text-white font-label-md text-label-md py-3 rounded-lg hover:bg-primary/90 transition-colors active:scale-98 shadow-sm flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-lg">filter_alt</span> Aplicar Filtros
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content Canvas -->
+    <main class="flex-1 ml-0 md:ml-[280px] p-container-padding overflow-y-auto bg-background">
+        <!-- Mobile Search (Visible only on small screens) -->
+        <div class="md:hidden mb-6 relative">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+            <input id="search-input-mobile" class="w-full h-12 pl-10 pr-4 rounded-lg bg-surface-container-lowest border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-md text-body-md text-on-surface" type="text" value="Cadeira giratória de escritório"/>
+        </div>
+
+        <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <h1 id="page-title" class="font-headline-lg text-headline-lg text-on-surface mb-2">Análise de Mercado</h1>
+                <p id="page-subtitle" class="font-body-lg text-body-lg text-on-surface-variant">Resultados para "Cadeira giratória de escritório" baseados em licitações recentes.</p>
+            </div>
+            <div id="loading-badge" class="px-3 py-1 bg-primary/10 text-primary border border-primary/20 rounded-full text-xs font-semibold animate-pulse hidden">
+                Buscando na API do PNCP...
+            </div>
+        </div>
+
+        <!-- Metrics Bento Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-card-gap mb-8" id="metrics-grid">
+            <!-- Metric Card 1 -->
+            <div class="bg-surface-container-lowest p-6 rounded-xl shadow-level-1 flex flex-col justify-between relative overflow-hidden border border-outline-variant/30">
+                <div class="absolute top-0 right-0 p-4 opacity-10">
+                    <span class="material-symbols-outlined text-6xl text-primary" style="font-variation-settings: 'FILL' 1;">payments</span>
+                </div>
+                <div class="relative z-10">
+                    <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-2 block">Preço Médio</span>
+                    <div id="metric-avg" class="font-headline-lg text-headline-lg text-on-surface font-bold">R$ 0,00</div>
+                    <div class="mt-2 text-xs text-on-surface-variant flex items-center font-body-md">
+                        Média ponderada do termo
+                    </div>
+                </div>
+            </div>
+            <!-- Metric Card 2 -->
+            <div class="bg-surface-container-lowest p-6 rounded-xl shadow-level-1 flex flex-col justify-between border border-outline-variant/30">
+                <div>
+                    <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-2 block">Menor Preço</span>
+                    <div id="metric-min" class="font-headline-lg text-headline-lg text-primary font-bold">R$ 0,00</div>
+                </div>
+                <div class="mt-4 flex items-center gap-2" id="metric-min-badge">
+                    <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-semibold">Preço Mínimo</span>
+                </div>
+            </div>
+            <!-- Metric Card 3 -->
+            <div class="bg-surface-container-lowest p-6 rounded-xl shadow-level-1 flex flex-col justify-between border border-outline-variant/30">
+                <div>
+                    <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-2 block">Maior Preço</span>
+                    <div id="metric-max" class="font-headline-lg text-headline-lg text-error font-bold">R$ 0,00</div>
+                </div>
+                <div class="mt-4 flex items-center gap-2" id="metric-max-badge">
+                    <span class="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-semibold">Teto Registrado</span>
+                </div>
+            </div>
+            <!-- Metric Card 4 -->
+            <div class="bg-surface-container-lowest p-6 rounded-xl shadow-level-1 flex flex-col justify-between border border-outline-variant/30">
+                <div>
+                    <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-2 block">Itens Analisados</span>
+                    <div id="metric-count" class="font-headline-lg text-headline-lg text-on-surface font-bold">0</div>
+                </div>
+                <div class="mt-4 w-full bg-surface-variant rounded-full h-1.5">
+                    <div id="metric-progress" class="bg-primary h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Table Section -->
+        <div class="bg-surface-container-lowest rounded-xl shadow-level-1 border border-outline-variant/30 overflow-hidden">
+            <div class="px-6 py-4 border-b border-surface-variant flex justify-between items-center bg-surface-bright">
+                <h3 class="font-headline-md text-headline-md text-on-surface">Resultados Detalhados</h3>
+                <div class="flex gap-2">
+                    <button id="export-csv-btn" class="flex items-center gap-2 px-3 py-1.5 border border-outline-variant rounded-md text-on-surface hover:bg-surface-container-low transition-colors font-label-md text-label-md">
+                        <span class="material-symbols-outlined text-sm">download</span> Exportar CSV
+                    </button>
+                </div>
+            </div>
+            <div class="overflow-x-auto w-full">
+                <table class="w-full text-left border-collapse min-w-[900px]">
+                    <thead>
+                        <tr class="bg-surface-container-low border-b border-surface-variant font-label-md text-label-md text-on-surface-variant uppercase">
+                            <th class="p-[16px_24px] font-semibold">Descrição do Item</th>
+                            <th class="p-[16px_24px] font-semibold w-36">Valor Unitário</th>
+                            <th class="p-[16px_24px] font-semibold w-24">Qtd</th>
+                            <th class="p-[16px_24px] font-semibold">Órgão Comprador</th>
+                            <th class="p-[16px_24px] font-semibold w-32">Data</th>
+                            <th class="p-[16px_24px] font-semibold w-40">Fonte dos Dados</th>
+                            <th class="p-[16px_24px] font-semibold text-right w-32">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body" class="font-body-md text-body-md divide-y divide-surface-variant">
+                        <!-- Dynamic Rows here -->
+                    </tbody>
+                </table>
+            </div>
+            <!-- Pagination / Footer Info -->
+            <div class="px-6 py-4 border-t border-surface-variant bg-surface-container-lowest flex items-center justify-between">
+                <span id="table-footer-info" class="text-sm text-on-surface-variant font-body-md">Carregando dados...</span>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    // State management
+    let selectedMunicipioId = null;
+    let selectedMunicipioData = null;
+    let currentSearchTerm = "Cadeira giratória de escritório";
+    let searchResults = [];
+
+    // Elements
+    const searchInput = document.getElementById("search-input");
+    const searchInputMobile = document.getElementById("search-input-mobile");
+    const ufSelect = document.getElementById("uf-select");
+    const muniInput = document.getElementById("muni-input");
+    const muniDropdown = document.getElementById("muni-dropdown");
+    const muniInfo = document.getElementById("muni-info");
+    const muniInfoName = document.getElementById("muni-info-name");
+    const muniInfoPop = document.getElementById("muni-info-pop");
+    const muniInfoPorte = document.getElementById("muni-info-porte");
+    const mesmoPorteToggle = document.getElementById("mesmo-porte-toggle");
+    const applyFiltersBtn = document.getElementById("apply-filters-btn");
+    const exportCsvBtn = document.getElementById("export-csv-btn");
+    const tableBody = document.getElementById("table-body");
+    const tableFooterInfo = document.getElementById("table-footer-info");
+    
+    const metricAvg = document.getElementById("metric-avg");
+    const metricMin = document.getElementById("metric-min");
+    const metricMax = document.getElementById("metric-max");
+    const metricCount = document.getElementById("metric-count");
+    const metricProgress = document.getElementById("metric-progress");
+    const loadingBadge = document.getElementById("loading-badge");
+    const pageTitle = document.getElementById("page-title");
+    const pageSubtitle = document.getElementById("page-subtitle");
+
+    // Initialize Page
+    document.addEventListener("DOMContentLoaded", () => {
+        // Parse URL query parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryParam = urlParams.get('q');
+        if (queryParam) {
+            currentSearchTerm = queryParam;
+        }
+
+        // Set inputs
+        searchInput.value = currentSearchTerm;
+        searchInputMobile.value = currentSearchTerm;
+
+        // Event Listeners
+        applyFiltersBtn.addEventListener("click", () => triggerSearch());
+        
+        searchInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+                triggerSearch(searchInput.value);
+            }
+        });
+
+        searchInputMobile.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+                triggerSearch(searchInputMobile.value);
+            }
+        });
+
+        muniInput.addEventListener("input", handleMuniSearch);
+        document.addEventListener("click", (e) => {
+            if (e.target !== muniInput && e.target !== muniDropdown) {
+                muniDropdown.classList.add("hidden");
+            }
+        });
+
+        exportCsvBtn.addEventListener("click", exportToCSV);
+
+        // Load Initial Data
+        triggerSearch();
+    });
+
+    // Handle Municipality Search (Autocomplete)
+    let muniSearchTimeout = null;
+    function handleMuniSearch() {
+        const query = muniInput.value.trim();
+        if (query.length < 2) {
+            muniDropdown.classList.add("hidden");
+            return;
+        }
+
+        clearTimeout(muniSearchTimeout);
+        muniSearchTimeout = setTimeout(async () => {
+            try {
+                const uf = ufSelect.value;
+                const response = await fetch(`/api/municipalities/?q=${encodeURIComponent(query)}&uf=${uf}`);
+                if (!response.ok) throw new Error("Erro ao buscar municípios");
+                const data = await response.json();
+                renderMuniDropdown(data);
+            } catch (err) {
+                console.error(err);
+            }
+        }, 300);
+    }
+
+    function renderMuniDropdown(municipios) {
+        muniDropdown.innerHTML = "";
+        if (municipios.length === 0) {
+            muniDropdown.innerHTML = `<div class="p-3 text-xs text-on-surface-variant">Nenhum município encontrado.</div>`;
+            muniDropdown.classList.remove("hidden");
+            return;
+        }
+
+        municipios.forEach(m => {
+            const div = document.createElement("div");
+            div.className = "px-4 py-2 hover:bg-primary/5 cursor-pointer text-sm text-on-surface flex justify-between items-center";
+            div.innerHTML = `
+                <div>
+                    <span class="font-medium">${m.nome}</span>
+                    <span class="text-xs text-on-surface-variant ml-1">(${m.uf})</span>
+                </div>
+                <span class="text-[10px] bg-surface-container px-2 py-0.5 rounded text-on-surface-variant font-semibold">${m.porte}</span>
+            `;
+            div.addEventListener("click", () => selectMunicipio(m));
+            muniDropdown.appendChild(div);
+        });
+        muniDropdown.classList.remove("hidden");
+    }
+
+    function selectMunicipio(muni) {
+        selectedMunicipioId = muni.id;
+        selectedMunicipioData = muni;
+        muniInput.value = muni.nome;
+        muniDropdown.classList.add("hidden");
+
+        muniInfoName.textContent = `${muni.nome}/${muni.uf}`;
+        muniInfoPop.textContent = Number(muni.populacao).toLocaleString("pt-BR");
+        muniInfoPorte.textContent = muni.porte;
+        muniInfo.classList.remove("hidden");
+
+        mesmoPorteToggle.disabled = false;
+        mesmoPorteToggle.checked = true;
+
+        ufSelect.value = muni.uf;
+    }
+
+    // Trigger Search
+    async function triggerSearch(term = "") {
+        const queryTerm = term.trim() || searchInput.value.trim() || searchInputMobile.value.trim() || currentSearchTerm;
+        currentSearchTerm = queryTerm;
+
+        searchInput.value = queryTerm;
+        searchInputMobile.value = queryTerm;
+
+        const uf = ufSelect.value;
+        const mesmoPorte = mesmoPorteToggle.checked && selectedMunicipioId !== null;
+        
+        let url = `/api/prices/search?termo=${encodeURIComponent(queryTerm)}`;
+        
+        if (mesmoPorte && selectedMunicipioId) {
+            url += `&municipio_origem_id=${selectedMunicipioId}&mesmo_porte=true`;
+        } else if (uf) {
+            url += `&uf=${uf}`;
+        }
+
+        renderSkeletonState();
+        loadingBadge.classList.remove("hidden");
+
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.detail || "Erro na busca");
+            }
+            const data = await response.json();
+            searchResults = data.items || [];
+            renderResults(data);
+        } catch (err) {
+            renderErrorState(err.message);
+        } finally {
+            loadingBadge.classList.add("hidden");
+        }
+    }
+
+    function renderSkeletonState() {
+        tableBody.innerHTML = "";
+        for (let i = 0; i < 5; i++) {
+            tableBody.innerHTML += `
+                <tr>
+                    <td class="p-[16px_24px]"><div class="h-4 w-48 rounded skeleton mb-2"></div><div class="h-3 w-64 rounded skeleton"></div></td>
+                    <td class="p-[16px_24px]"><div class="h-4 w-16 rounded skeleton"></div></td>
+                    <td class="p-[16px_24px]"><div class="h-4 w-8 rounded skeleton"></div></td>
+                    <td class="p-[16px_24px]"><div class="h-4 w-36 rounded skeleton"></div></td>
+                    <td class="p-[16px_24px]"><div class="h-4 w-20 rounded skeleton"></div></td>
+                    <td class="p-[16px_24px]"><div class="h-4 w-32 rounded skeleton"></div></td>
+                    <td class="p-[16px_24px] text-right"><div class="h-8 w-24 rounded skeleton ml-auto"></div></td>
+                </tr>
+            `;
+        }
+        metricAvg.textContent = "Calculando...";
+        metricMin.textContent = "Calculando...";
+        metricMax.textContent = "Calculando...";
+        metricCount.textContent = "...";
+        metricProgress.style.width = "20%";
+    }
+
+    function renderErrorState(message) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="7" class="p-8 text-center text-error font-semibold bg-error-container/20">
+                    <span class="material-symbols-outlined text-3xl align-middle mr-2">error</span>
+                    Ocorreu um erro ao carregar os dados: ${message}
+                </td>
+            </tr>
+        `;
+        tableFooterInfo.textContent = "Falha ao carregar registros.";
+        metricAvg.textContent = "R$ --";
+        metricMin.textContent = "R$ --";
+        metricMax.textContent = "R$ --";
+        metricCount.textContent = "0";
+        metricProgress.style.width = "0%";
+    }
+
+    function renderResults(data) {
+        tableBody.innerHTML = "";
+        
+        pageTitle.textContent = `Resultados para "${data.termo}"`;
+        pageSubtitle.textContent = `Resultados encontrados em contratações públicas baseados no filtro informado.`;
+
+        const items = data.items || [];
+        
+        if (items.length === 0) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="p-8 text-center text-on-surface-variant font-medium bg-surface-container-low/30">
+                        Nenhum item de preço encontrado para esta combinação de filtros.
+                    </td>
+                </tr>
+            `;
+            tableFooterInfo.textContent = "Nenhum resultado disponível.";
+            metricAvg.textContent = "R$ 0,00";
+            metricMin.textContent = "R$ 0,00";
+            metricMax.textContent = "R$ 0,00";
+            metricCount.textContent = "0";
+            metricProgress.style.width = "0%";
+            return;
+        }
+
+        let minVal = Infinity;
+        let maxVal = -Infinity;
+        let sumVal = 0;
+        
+        items.forEach(item => {
+            const v = item.valor_unitario;
+            if (v < minVal) minVal = v;
+            if (v > maxVal) maxVal = v;
+            sumVal += v;
+
+            const row = document.createElement("tr");
+            row.className = "hover:bg-surface-bright transition-colors group";
+            
+            let porteBadgeHtml = "";
+            if (selectedMunicipioData && item.municipio_porte === selectedMunicipioData.porte && item.municipio_uf === selectedMunicipioData.uf) {
+                porteBadgeHtml = `<span class="px-2 py-0.5 bg-primary/10 text-primary border border-primary/20 text-[9px] uppercase font-bold rounded-sm ml-2">Mesmo Porte</span>`;
+            }
+
+            const dataCompraFormatada = new Date(item.data_compra + "T12:00:00").toLocaleDateString("pt-BR");
+            
+            let fonteClass = "bg-surface-container text-on-surface-variant";
+            if (item.fonte.includes("Tempo Real")) {
+                fonteClass = "bg-green-100 text-green-800 border border-green-200";
+            } else if (item.fonte.includes("Simulador")) {
+                fonteClass = "bg-amber-100 text-amber-800 border border-amber-200";
+            }
+
+            row.innerHTML = `
+                <td class="p-[16px_24px]">
+                    <div class="font-medium text-on-surface">${item.nome_item}</div>
+                    <div class="text-xs text-on-surface-variant mt-1">Cód. IBGE Comprador: ${item.municipio_id || 'Não Informado'}</div>
+                </td>
+                <td class="p-[16px_24px] font-data-mono text-data-mono font-bold text-on-surface text-base">
+                    ${item.valor_unitario.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                </td>
+                <td class="p-[16px_24px] text-on-surface-variant">${item.quantidade}</td>
+                <td class="p-[16px_24px]">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        <span class="text-on-surface font-medium">${item.orgao_comprador}</span>
+                        <span class="text-xs text-on-surface-variant">(${item.municipio_nome || 'N/I'} - ${item.municipio_uf || ''})</span>
+                        ${porteBadgeHtml}
+                    </div>
+                    <div class="text-[10px] text-on-surface-variant opacity-75 mt-0.5">Porte: ${item.municipio_porte || 'Não Listado'} (${(item.municipio_populacao || 0).toLocaleString("pt-BR")} hab.)</div>
+                </td>
+                <td class="p-[16px_24px] text-on-surface-variant">${dataCompraFormatada}</td>
+                <td class="p-[16px_24px]">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${fonteClass}">
+                        ${item.fonte}
+                    </span>
+                </td>
+                <td class="p-[16px_24px] text-right">
+                    <a href="${item.link_contrato}" target="_blank" class="opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity text-primary font-label-md text-label-md hover:underline inline-flex items-center justify-end gap-1 w-full font-bold">
+                        Ver no PNCP <span class="material-symbols-outlined text-sm">open_in_new</span>
+                    </a>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+
+        const avgVal = sumVal / items.length;
+        metricAvg.textContent = avgVal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+        metricMin.textContent = minVal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+        metricMax.textContent = maxVal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+        metricCount.textContent = items.length;
+        
+        const pct = Math.min(100, Math.round((items.length / 30) * 100));
+        metricProgress.style.width = `${pct}%`;
+
+        tableFooterInfo.textContent = `Mostrando ${items.length} de ${items.length} resultados encontrados.`;
+    }
+
+    function exportToCSV() {
+        if (searchResults.length === 0) {
+            alert("Nenhum dado para exportar.");
+            return;
+        }
+
+        let csv = "ID;Item;Valor Unitario;Quantidade;Orgao;Municipio;UF;Porte;Data;Link\n";
+        
+        searchResults.forEach(item => {
+            csv += `"${item.id}";"${item.nome_item.replace(/"/g, '""')}";${item.valor_unitario};${item.quantidade};"${item.orgao_comprador.replace(/"/g, '""')}";"${(item.municipio_nome || '').replace(/"/g, '""')}";"${item.municipio_uf || ''}";"${item.municipio_porte || ''}";"${item.data_compra}";"${item.link_contrato}"\n`;
+        });
+
+        const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `banco_precos_${currentSearchTerm.toLowerCase().replace(/\s+/g, "_")}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+</body>
+</html>

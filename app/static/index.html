@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Banco de Preços Públicos - Início</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-on-surface": "#eff1f3",
+                        "outline-variant": "#c2c6d6",
+                        "on-tertiary-container": "#fdfcff",
+                        "on-tertiary-fixed": "#0b1c30",
+                        "tertiary": "#4d5d73",
+                        "on-secondary": "#ffffff",
+                        "surface-container-high": "#e6e8ea",
+                        "secondary": "#565e74",
+                        "on-secondary-container": "#5c647a",
+                        "tertiary-container": "#66768d",
+                        "primary-container": "#2170e4",
+                        "background": "#f7f9fb",
+                        "inverse-surface": "#2d3133",
+                        "on-surface": "#191c1e",
+                        "on-background": "#191c1e",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed": "#001a42",
+                        "on-primary-container": "#fefcff",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed-variant": "#3f465c",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed": "#dae2fd",
+                        "error-container": "#ffdad6",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-tint": "#005ac2",
+                        "surface": "#f7f9fb",
+                        "primary": "#0058be",
+                        "tertiary-fixed-dim": "#b7c8e1",
+                        "surface-dim": "#d8dadc",
+                        "primary-fixed-dim": "#adc6ff",
+                        "primary-fixed": "#d8e2ff",
+                        "outline": "#727785",
+                        "on-secondary-fixed": "#131b2e",
+                        "surface-bright": "#f7f9fb",
+                        "on-error-container": "#93000a",
+                        "surface-container-highest": "#e0e3e5",
+                        "surface-container-low": "#f2f4f6",
+                        "on-primary-fixed-variant": "#004395",
+                        "surface-container": "#eceef0",
+                        "secondary-fixed-dim": "#bec6e0",
+                        "on-surface-variant": "#424754",
+                        "inverse-primary": "#adc6ff",
+                        "on-error": "#ffffff",
+                        "surface-variant": "#e0e3e5",
+                        "secondary-container": "#dae2fd",
+                        "on-tertiary-fixed-variant": "#38485d",
+                        "tertiary-fixed": "#d3e4fe"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-padding": "24px",
+                        "base": "8px",
+                        "table-cell-padding": "16px 24px",
+                        "gutter-grid": "20px",
+                        "card-gap": "16px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "data-mono": ["Inter"],
+                        "label-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "data-mono": ["14px", { "lineHeight": "20px", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen">
+<!-- TopNavBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-container-padding h-16 bg-surface-container-lowest dark:bg-surface-dim shadow-sm">
+    <div class="flex items-center gap-4">
+        <a href="/" class="flex items-center gap-4 hover:opacity-90">
+            <span class="material-symbols-outlined text-primary text-2xl" data-weight="fill" style="font-variation-settings: 'FILL' 1;">account_balance</span>
+            <span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">Banco de Preços Públicos</span>
+        </a>
+    </div>
+    <div class="flex items-center gap-4">
+        <button onclick="showToast('O centro de notificações estará disponível em breve!');" class="p-2 rounded-full text-on-surface-variant hover:bg-surface-container-low transition-colors hover:text-primary scale-95 duration-200">
+            <span class="material-symbols-outlined">notifications</span>
+        </button>
+        <button onclick="showToast('A página de perfil do usuário estará disponível em breve!');" class="p-2 rounded-full text-on-surface-variant hover:bg-surface-container-low transition-colors hover:text-primary scale-95 duration-200">
+            <span class="material-symbols-outlined">account_circle</span>
+        </button>
+    </div>
+</header>
+
+<!-- Main Layout -->
+<div class="flex pt-16 h-screen overflow-hidden">
+    <!-- SideNavBar -->
+    <nav class="hidden md:flex flex-col fixed left-0 top-16 h-[calc(100vh-64px)] w-[280px] p-base flex flex-col gap-4 bg-surface-container-low dark:bg-on-surface-variant border-r border-outline-variant z-40">
+        <div class="p-4 mb-4">
+            <h2 class="font-headline-sm text-headline-sm font-bold text-primary">Navegação Principal</h2>
+            <p class="font-label-md text-label-md text-on-surface-variant mt-1">Refine sua análise de preços</p>
+        </div>
+        <ul class="flex-1 space-y-2">
+            <li>
+                <a class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container font-semibold rounded-lg active:scale-98 transition-transform" href="/">
+                    <span class="material-symbols-outlined text-primary">home</span>
+                    <span class="font-body-md text-body-md">Início</span>
+                </a>
+            </li>
+            <li>
+                <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant rounded-lg active:scale-98 transition-transform hover:bg-surface-container-high transition-all" href="/search">
+                    <span class="material-symbols-outlined">search</span>
+                    <span class="font-body-md text-body-md">Pesquisa Avançada</span>
+                </a>
+            </li>
+            <li>
+                <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant rounded-lg active:scale-98 transition-transform hover:bg-surface-container-high transition-all" href="#" onclick="event.preventDefault(); showToast('O painel de relatórios consolidados estará disponível em breve!');">
+                    <span class="material-symbols-outlined">analytics</span>
+                    <span class="font-body-md text-body-md">Relatórios</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    
+    <!-- Main Content Canvas -->
+    <main class="flex-1 md:ml-[280px] h-full overflow-y-auto bg-surface-bright relative">
+        <!-- Hero Search Area with Decorative Background -->
+        <div class="relative w-full h-[400px] flex items-center justify-center flex-col px-container-padding overflow-hidden border-b border-surface-container-high bg-gradient-to-br from-primary-fixed/30 to-background">
+            <div class="absolute inset-0 z-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(circle at 50% 50%, theme('colors.primary') 0%, transparent 70%);"></div>
+            <div class="relative z-10 w-full max-w-3xl text-center space-y-6">
+                <h1 class="font-headline-lg text-headline-lg text-on-surface">Bem-vindo ao Banco de Preços Públicos</h1>
+                <p class="font-body-lg text-body-lg text-on-surface-variant">Pesquise milhões de itens homologados em todo o Brasil com precisão e velocidade.</p>
+                <div class="relative w-full max-w-2xl mx-auto mt-8 group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <span class="material-symbols-outlined text-outline">search</span>
+                    </div>
+                    <input id="hero-search" class="w-full pl-12 pr-32 py-4 rounded-xl border border-outline-variant bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:border-primary font-body-md text-body-md text-on-surface shadow-sm transition-shadow group-hover:shadow-md" placeholder="Digite o nome do item... (Pressione '/' para focar)" type="text"/>
+                    <button id="hero-search-btn" class="absolute inset-y-2 right-2 px-6 bg-primary text-on-primary rounded-lg font-label-md text-label-md hover:bg-surface-tint transition-colors">
+                        Pesquisar
+                    </button>
+                </div>
+                <p class="text-xs text-on-surface-variant/80 mt-3 font-body-md flex items-center justify-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px] text-primary" style="font-variation-settings: 'FILL' 1;">info</span>
+                    Dica: Tente buscar por itens específicos como <strong>"Cadeira giratória"</strong>, <strong>"Notebook"</strong> ou <strong>"Papel A4"</strong>.
+                </p>
+            </div>
+        </div>
+
+        <!-- Dashboard Content Container -->
+        <div class="max-w-7xl mx-auto px-container-padding py-8 space-y-12">
+            <!-- Pesquisas Recentes - Bento Grid Style -->
+            <section>
+                <div class="flex items-center gap-2 mb-6">
+                    <span class="material-symbols-outlined text-primary">history</span>
+                    <h2 class="font-headline-sm text-headline-sm text-on-surface">Pesquisas Recentes</h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-card-gap">
+                    <!-- Card 1 -->
+                    <div onclick="navigateToSearch('Cadeira giratória de escritório')" class="bg-surface-container-lowest rounded-xl p-6 border border-surface-container shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-all cursor-pointer group">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="p-2 bg-secondary-container rounded-lg">
+                                <span class="material-symbols-outlined text-on-secondary-container">chair</span>
+                            </div>
+                            <span class="font-label-md text-label-md text-outline">Frequente</span>
+                        </div>
+                        <h3 class="font-headline-sm text-headline-sm text-on-surface mb-2 group-hover:text-primary transition-colors">Cadeira Giratória</h3>
+                        <p class="font-body-md text-body-md text-on-surface-variant">Pesquise preços de cadeiras corporativas homologadas.</p>
+                    </div>
+                    <!-- Card 2 -->
+                    <div onclick="navigateToSearch('Resma de papel')" class="bg-surface-container-lowest rounded-xl p-6 border border-surface-container shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-all cursor-pointer group">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="p-2 bg-secondary-container rounded-lg">
+                                <span class="material-symbols-outlined text-on-secondary-container">description</span>
+                            </div>
+                            <span class="font-label-md text-label-md text-outline">Frequente</span>
+                        </div>
+                        <h3 class="font-headline-sm text-headline-sm text-on-surface mb-2 group-hover:text-primary transition-colors">Papel A4 / Resma</h3>
+                        <p class="font-body-md text-body-md text-on-surface-variant">Veja valores de resmas de papel sulfite A4.</p>
+                    </div>
+                    <!-- Card 3 -->
+                    <div onclick="navigateToSearch('Notebook')" class="bg-surface-container-lowest rounded-xl p-6 border border-surface-container shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-all cursor-pointer group relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-24 h-24 bg-primary-fixed-dim rounded-bl-full opacity-20 -z-10"></div>
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="p-2 bg-secondary-container rounded-lg">
+                                <span class="material-symbols-outlined text-on-secondary-container">laptop_mac</span>
+                            </div>
+                            <span class="font-label-md text-label-md text-outline">Frequente</span>
+                        </div>
+                        <h3 class="font-headline-sm text-headline-sm text-on-surface mb-2 group-hover:text-primary transition-colors">Notebook i5/i7</h3>
+                        <p class="font-body-md text-body-md text-on-surface-variant">Compare valores unitários de equipamentos de TI.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Últimas Licitações - Data List View -->
+            <section>
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">feed</span>
+                        <h2 class="font-headline-sm text-headline-sm text-on-surface">Sugestões de Pesquisa (PNCP)</h2>
+                    </div>
+                    <a href="/search" class="font-label-md text-label-md text-primary hover:underline flex items-center gap-1">
+                        Ir para pesquisa avançada
+                        <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+                    </a>
+                </div>
+                <div class="bg-surface-container-lowest rounded-xl border border-surface-container shadow-[0_4px_12px_rgba(0,0,0,0.05)] overflow-hidden">
+                    <!-- Header Row -->
+                    <div class="grid grid-cols-12 gap-4 px-table-cell-padding py-3 bg-surface-container-low border-b border-surface-variant">
+                        <div class="col-span-5 font-label-md text-label-md text-on-surface-variant uppercase">Sugestão de Item</div>
+                        <div class="col-span-3 font-label-md text-label-md text-on-surface-variant uppercase">Órgão de Referência</div>
+                        <div class="col-span-2 font-label-md text-label-md text-on-surface-variant uppercase">Valor Médio Estimado</div>
+                        <div class="col-span-2 font-label-md text-label-md text-on-surface-variant uppercase">Ação</div>
+                    </div>
+                    <!-- Data Rows -->
+                    <div class="divide-y divide-surface-variant">
+                        <!-- Row 1 -->
+                        <div class="grid grid-cols-12 gap-4 px-table-cell-padding py-4 hover:bg-surface-bright transition-colors items-center group cursor-pointer" onclick="navigateToSearch('Veículos Utilitários')">
+                            <div class="col-span-5">
+                                <div class="font-body-md text-body-md text-on-surface font-medium truncate">Aquisição de Veículos Utilitários tipo Picape</div>
+                                <div class="font-label-md text-label-md text-outline mt-1">Pregão Eletrônico Geral</div>
+                            </div>
+                            <div class="col-span-3 font-body-md text-body-md text-on-surface-variant truncate">
+                                Prefeitura Municipal de São Paulo
+                            </div>
+                            <div class="col-span-2 font-data-mono text-data-mono text-on-surface font-semibold">
+                                R$ 145.000,00
+                            </div>
+                            <div class="col-span-2 flex items-center justify-between">
+                                <span class="font-body-md text-body-md text-on-surface-variant">Hoje</span>
+                                <button class="opacity-0 group-hover:opacity-100 p-1 text-primary hover:bg-primary-fixed rounded transition-all">
+                                    <span class="material-symbols-outlined text-[20px]">search</span>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Row 2 -->
+                        <div class="grid grid-cols-12 gap-4 px-table-cell-padding py-4 hover:bg-surface-bright transition-colors items-center group cursor-pointer" onclick="navigateToSearch('Serviço de limpeza')">
+                            <div class="col-span-5">
+                                <div class="font-body-md text-body-md text-on-surface font-medium truncate">Serviços de Manutenção de Ar Condicionado / Limpeza</div>
+                                <div class="font-label-md text-label-md text-outline mt-1">Dispensa Eletrônica</div>
+                            </div>
+                            <div class="col-span-3 font-body-md text-body-md text-on-surface-variant truncate">
+                                Ministério da Saúde
+                            </div>
+                            <div class="col-span-2 font-data-mono text-data-mono text-on-surface font-semibold">
+                                R$ 8.500,00
+                            </div>
+                            <div class="col-span-2 flex items-center justify-between">
+                                <span class="font-body-md text-body-md text-on-surface-variant">Ontem</span>
+                                <button class="opacity-0 group-hover:opacity-100 p-1 text-primary hover:bg-primary-fixed rounded transition-all">
+                                    <span class="material-symbols-outlined text-[20px]">search</span>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Row 3 -->
+                        <div class="grid grid-cols-12 gap-4 px-table-cell-padding py-4 hover:bg-surface-bright transition-colors items-center group cursor-pointer" onclick="navigateToSearch('Licença de software')">
+                            <div class="col-span-5">
+                                <div class="font-body-md text-body-md text-on-surface font-medium truncate">Licenças de Software de Segurança / Antivírus</div>
+                                <div class="font-label-md text-label-md text-outline mt-1">Concorrência Pública</div>
+                            </div>
+                            <div class="col-span-3 font-body-md text-body-md text-on-surface-variant truncate">
+                                Tribunal de Contas da União
+                            </div>
+                            <div class="col-span-2 font-data-mono text-data-mono text-on-surface font-semibold">
+                                R$ 450,00
+                            </div>
+                            <div class="col-span-2 flex items-center justify-between">
+                                <span class="font-body-md text-body-md text-on-surface-variant">12/05/2024</span>
+                                <button class="opacity-0 group-hover:opacity-100 p-1 text-primary hover:bg-primary-fixed rounded transition-all">
+                                    <span class="material-symbols-outlined text-[20px]">search</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <!-- Bottom spacing -->
+        <div class="h-12"></div>
+    </main>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast-notification" class="fixed bottom-4 right-4 z-50 transform translate-y-12 opacity-0 transition-all duration-300 pointer-events-none bg-surface-container-highest border border-outline-variant rounded-lg p-4 shadow-level-2 max-w-sm flex items-center gap-3">
+    <span class="material-symbols-outlined text-primary">info</span>
+    <div class="text-sm font-body-md text-on-surface" id="toast-message">Este recurso estará disponível em breve!</div>
+</div>
+
+<script>
+    const heroSearch = document.getElementById("hero-search");
+    const heroSearchBtn = document.getElementById("hero-search-btn");
+    const toast = document.getElementById("toast-notification");
+    const toastMessage = document.getElementById("toast-message");
+
+    document.addEventListener("DOMContentLoaded", () => {
+        // Search submit listeners
+        heroSearch.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+                navigateToSearch(heroSearch.value);
+            }
+        });
+        
+        heroSearchBtn.addEventListener("click", () => {
+            navigateToSearch(heroSearch.value);
+        });
+
+        // Global shortcut "/" to focus search bar (P1 - Alex)
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "/" && document.activeElement !== heroSearch && !["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement.tagName)) {
+                e.preventDefault();
+                heroSearch.focus();
+                heroSearch.select();
+            }
+        });
+    });
+
+    function navigateToSearch(term) {
+        if (!term.trim()) return;
+        window.location.href = `/search?q=${encodeURIComponent(term.trim())}`;
+    }
+
+    // Show custom toast notification (P2 - Jordan)
+    let toastTimeout = null;
+    function showToast(message) {
+        toastMessage.textContent = message;
+        toast.classList.remove("translate-y-12", "opacity-0", "pointer-events-none");
+        toast.classList.add("translate-y-0", "opacity-100");
+        
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+            toast.classList.remove("translate-y-0", "opacity-100");
+            toast.classList.add("translate-y-12", "opacity-0", "pointer-events-none");
+        }, 3000);
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+# Environments
+.env
+.env.local
+.env.*
+
+# Database files
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+banco_precos.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Editor / IDEs
+.vscode/
+.idea/
+.cursor/
+.claude/
+.codex/
+.impeccable/
+.gemini/
+
+# Scratch / Temp files
+scratch/
