@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from datetime import date
+
 
 from app.database import get_db
 from app.models import Municipio, CacheContratacao
@@ -108,7 +110,6 @@ async def search_prices(
     if municipio_origem_model:
         municipio_origem_schema = MunicipioSchema.model_validate(municipio_origem_model)
 
-    from datetime import date
     return PriceSearchResponse(
         termo=termo,
         municipio_origem=municipio_origem_schema,
